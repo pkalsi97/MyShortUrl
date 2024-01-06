@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register - MyShortUrl</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}" />
+</head>
+<body>
+<header class="bg-info text-white text-center py-4">
+    <h1>Register for MyShortUrl</h1>
+</header>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/register}" method="post">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="username" placeholder="Username" required />
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-control" name="email" placeholder="Email" required />
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" name="password" placeholder="Password" required />
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" name="confirmPassword" placeholder="Confirm Password" required />
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Register</button>
+                    </form>
+                    <p class="text-center mt-3">
+                        Have an account? <a th:href="@{/loginPage}">Click here to log in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
