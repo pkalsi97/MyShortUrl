@@ -34,12 +34,11 @@ public class User {
     private String password;
 
     private int urlLimit = 5; // Default URL limit
+    private int activeUrlCount;
 
-    // Lombok will handle getters and setters for all fields
-
-    // Use JsonIgnore to prevent password from being serialized
     @JsonIgnore
     public String getPassword() {
         return password;
     }
+
 }

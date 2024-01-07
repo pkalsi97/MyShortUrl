@@ -3,7 +3,6 @@
 <head>
     <title>Register - MyShortUrl</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}" />
 </head>
 <body>
 <header class="bg-info text-white text-center py-4">
@@ -22,15 +21,16 @@
                             <input type="email" class="form-control" name="email" placeholder="Email" required />
                         </div>
                         <div class="form-group">
-                            <input type="password" class="form-control" name="password" placeholder="Password" required />
+                            <input type="password" class="form-control" name="password" placeholder="Password" required minlength="8" />
                         </div>
                         <div class="form-group">
-                            <input type="password" class="form-control" name="confirmPassword" placeholder="Confirm Password" required />
+                            <input type="password" class="form-control" name="confirmPassword" placeholder="Confirm Password" required minlength="8" />
                         </div>
                         <button type="submit" class="btn btn-success btn-block">Register</button>
+                        <p th:if="${error}" th:text="${error}" class="text-danger text-center mt-3"></p>
                     </form>
                     <p class="text-center mt-3">
-                        Have an account? <a th:href="@{/loginPage}">Click here to log in</a>
+                        Have an account? <a th:href="@{/login}">Click here to log in</a>
                     </p>
                 </div>
             </div>

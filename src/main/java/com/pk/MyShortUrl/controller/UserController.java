@@ -3,6 +3,7 @@ package com.pk.MyShortUrl.controller;
 import com.pk.MyShortUrl.model.User;
 import com.pk.MyShortUrl.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,48 +18,62 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/register")
-    public ModelAndView showRegistrationForm() {
-        ModelAndView modelAndView = new ModelAndView("register");
-        return modelAndView;
+    public ModelAndView showRegistrationForm(HttpServletResponse response) {
+        clearResponseCache(response);
+        return new ModelAndView("register");
     }
 
     @PostMapping("/register")
-    public ModelAndView registerUser(@RequestParam String username, @RequestParam String email, @RequestParam String password) {
+    public ModelAndView registerUser(@RequestParam String username,
+                                     @RequestParam String email,
+                                     @RequestParam String password,
+                                     @RequestParam String confirmPassword,
+                                     HttpServletResponse response) {
+        ModelAndView modelAndView = new ModelAndView("register");
+
+        if (!password.equals(confirmPassword)) {
+            modelAndView.addObject("error", "Passwords do not match.");
+            return modelAndView;
+        }
+
+        if (password.length() < 8) {
+            modelAndView.addObject("error", "Password must be at least 8 characters long.");
+            return modelAndView;
+        }
+
+        // Check if username or email exists
+        if (userService.checkUserExists(username) || userService.checkEmailExists(email)) {
+            modelAndView.addObject("error", "Username or email already exists. Please try a different one.");
+            return modelAndView;
+        }
+
         User newUser = userService.registerUser(username, email, password);
         if (newUser != null) {
-            ModelAndView modelAndView = new ModelAndView("redirect:/loginPage");
-            // Redirect to log in after successful registration
-            return modelAndView;
+            clearResponseCache(response);
+            return new ModelAndView("redirect:/login");
         } else {
-            ModelAndView modelAndView = new ModelAndView("register");
-            modelAndView.addObject("error", "Username already exists. Please try a different one.");
+            modelAndView.addObject("error", "An error occurred during registration. Please try again.");
             return modelAndView;
         }
     }
 
     @GetMapping("/logout")
-    public ModelAndView logout(HttpServletRequest request) {
+    public ModelAndView logout(HttpServletRequest request, HttpServletResponse response) {
+        clearResponseCache(response);
         request.getSession().invalidate();
-        return new ModelAndView("redirect:/loginPage");
+        return new ModelAndView("redirect:/login");
     }
 
-    @PostMapping("/login")
-    public ModelAndView loginUser(@RequestParam String username, @RequestParam String password) {
-        if (userService.loginUser(username, password)) {
-            ModelAndView modelAndView = new ModelAndView("dashboard");
-            modelAndView.addObject("username", username);
-            User user = userService.getUserByUsername(username);
-            modelAndView.addObject("urlLimit", user.getUrlLimit());
-            return modelAndView;
-        } else {
-            ModelAndView modelAndView = new ModelAndView("index");
-            modelAndView.addObject("error", "Invalid username or password.");
-            return modelAndView;
-        }
+    @GetMapping("/login")
+    public String showLoginPage(HttpServletResponse response) {
+        clearResponseCache(response);
+        return "index";
     }
 
-    @GetMapping("/loginPage")
-    public String showLoginPage() {
-        return "index"; // Assuming "login" is the name of your login HTML template
+    private void clearResponseCache(HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
     }
+
 }

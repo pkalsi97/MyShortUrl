@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expired Link - MyShortUrl</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Add any additional CSS files here -->
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1>Expired Link</h1>
+            <p th:text="${message}">This short URL has expired or is invalid.</p>
+            <a th:href="@{/}" class="btn btn-primary">Go to Home</a>
+        </div>
+    </div>
+</div>
+<!-- Include additional JS files here if necessary -->
+</body>
+</html>

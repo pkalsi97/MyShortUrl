@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <title>Active URLs - MyShortUrl</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    .mb-3 { margin-bottom: 15px; }
+    .d-flex { display: flex; align-items: center; }
+    .justify-content-between { justify-content: space-between; }
+    .url-details { flex-grow: 1; margin-right: 20px; }
+    .qr-code-container { text-align: center; }
+    .qr-code-img { max-width: 150px; height: auto; } /* Adjusted size */
+    .url-row { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; display: flex; }
+    .button-group { display: flex; align-items: center; margin-top: 10px; }
+    .btn-space { margin-right: 10px; }
+  </style>
+</head>
+<body>
+<header class="bg-info text-white text-center py-4">
+  <div class="container d-flex justify-content-between">
+    <h1>Active URLs</h1>
+    <a th:href="@{/dashboard}" class="btn btn-primary">Back to Dashboard</a>
+  </div>
+</header>
+
+<div class="container mt-5">
+  <div th:if="${activeUrls.isEmpty()}">
+    <p>No active URLs found.</p>
+  </div>
+  <div th:each="url, iterStat : ${activeUrls}" class="url-row">
+    <div class="url-details">
+      <p>Short URL: <a th:href="${url.shortLink}" th:text="${url.shortLink}" id="'shortUrl-' + ${iterStat.index}">Short URL</a></p>
+      <p>Original URL: <span th:text="${url.originalUrl}">Original URL</span></p>
+      <p>Creation Date: <span th:text="${#temporals.format(url.creationDate, 'dd MMM yyyy, h:mm a')} + ' (IST)'">Creation Date</span></p>
+      <p>Expiry Time: <span th:text="${#temporals.format(url.expirationDate, 'dd MMM yyyy, h:mm a')} + ' (IST)'">Expiry Time</span></p>
+      <div class="button-group">
+        <!-- Corrected onclick attribute expression -->
+        <a th:href="${url.shortLink}" class="btn btn-secondary btn-space" target="_blank">Go to URL</a>
+        <a th:href="'data:image/png;base64,' + ${url.qrCode}" download="qr-code.png" class="btn btn-secondary btn-space">Download QR</a>
+        <form th:action="@{/deactivate-url}" method="post" class="btn-space">
+          <input type="hidden" th:value="${url.id}" name="urlId"/>
+          <button type="submit" onclick="return confirmDeactivation()" class="btn btn-danger">Deactivate</button>
+        </form>
+      </div>
+    </div>
+    <div class="qr-code-container">
+      <img th:src="'data:image/png;base64,' + ${url.qrCode}" alt="QR Code" class="qr-code-img" />
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyToClipboard(id) {
+    const shortUrlElement = document.getElementById(id);
+    if (shortUrlElement) {
+      navigator.clipboard.writeText(shortUrlElement.href)
+              .then(() => alert('Short URL copied to clipboard!'))
+              .catch(err => console.error('Could not copy text: ', err));
+    } else {
+      console.error('Element with ID not found: ', id);
+    }
+  }
+</script>
+
+</body>
+</html>

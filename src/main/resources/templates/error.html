@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Error - MyShortUrl</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/style.css}">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1>Oops!</h1>
+            <p>Something went wrong.</p>
+            <a th:href="@{/}" class="btn btn-primary">Login Again</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
