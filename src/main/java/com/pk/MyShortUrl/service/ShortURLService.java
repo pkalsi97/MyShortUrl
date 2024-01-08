@@ -89,13 +89,8 @@ public class ShortURLService {
         return false;
     }
 
-
-    private final Set<String> reservedPaths = Set.of(
-            "login", "logout", "register", "dashboard", "active-urls", "error"
-    );
-
     public boolean isBackHalfValid(String backHalf) {
-        return !reservedPaths.contains(backHalf);
+        return !appConfig.getReservedPaths().contains(backHalf);
     }
 
     public boolean isBackHalfAvailable(String backHalf) {
