@@ -11,4 +11,5 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class AppConfig {
     private String baseUrl;
+    private int timeAllotted;
 }
