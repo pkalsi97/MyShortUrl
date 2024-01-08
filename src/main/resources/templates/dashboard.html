@@ -12,6 +12,7 @@
         .bold { font-weight: bold; }
         .button-group { margin-top: 10px; }
         .qr-code-img { max-width: 100%; height: auto; margin-top: 15px; }
+        .btn-refresh-spacing {margin-right: 165px;}
     </style>
 </head>
 <body>
@@ -45,7 +46,7 @@
                         <input type="url" id="longUrl" name="longUrl" class="form-control" placeholder="https://example.com/page" required>
                     </div>
                     <div class="form-group">
-                        <label for="backHalf">Enter a back-half</label>
+                        <label for="backHalf">Enter a back-half or Click on Generate back-half</label>
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" th:text="${baseUrl}">http://localhost/</span>
@@ -54,9 +55,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Generate</button>
-                        <button type="button" onclick="window.location.reload(true)" class="btn btn-secondary">Refresh</button>
+                        <button type="submit" class="btn btn-primary">Generate ShortURL</button>
+                        <button type="button" onclick="window.location.reload(true)" class="btn btn-secondary btn-refresh-spacing">Refresh</button>
+                        <button type="button" id="validateBacklinkBtn" class="btn btn-info">Validate Back-half</button>
+                        <button type="button" id="generateBacklinkBtn" class="btn btn-info">Generate Back-half</button>
                     </div>
+
                 </form>
             </div>
 
@@ -78,6 +82,16 @@
         event.preventDefault();
         let formData = new FormData(this);
         let messageContainer = document.getElementById('messageContainer');
+
+
+        let backHalf = document.getElementById('backHalf').value;
+        let validPattern = /^[A-Za-z0-9-_]+$/;
+
+        if (!validPattern.test(backHalf)) {
+            messageContainer.textContent = 'The back-half can only contain alphanumeric characters, hyphens, and underscores.';
+            messageContainer.style.display = 'block';
+            return; // Stop the function here if validation fails
+        }
 
         fetch(this.action, {
             method: 'POST',
@@ -127,6 +141,68 @@
         element.click();
         document.body.removeChild(element);
     }
+
+    document.getElementById('validateBacklinkBtn').addEventListener('click', function() {
+        let backHalf = document.getElementById('backHalf').value;
+        let messageContainer = document.getElementById('messageContainer');
+
+        let validPattern = /^[A-Za-z0-9-_]+$/;
+        if (!validPattern.test(backHalf)) {
+            messageContainer.textContent = 'The back-half can only contain alphanumeric characters, hyphens, and underscores.';
+            messageContainer.className = 'alert alert-danger';
+            messageContainer.style.display = 'block';
+            return; // Stop the function here if validation fails
+        }
+
+        let validateUrl = '/validate-backhalf?backHalf=' + encodeURIComponent(backHalf); // Correctly encoded URL
+
+        fetch(validateUrl)
+            .then(response => response.json())
+            .then(data => {
+                if(data.isValid && data.isAvailable) {
+                    messageContainer.textContent = 'Yes, this Back-half is valid.';
+                    messageContainer.className = 'alert alert-success';
+                } else {
+                    messageContainer.textContent = 'Back-half not valid or not available.';
+                    messageContainer.className = 'alert alert-danger';
+                }
+                messageContainer.style.display = 'block';
+            })
+            .catch(err => {
+                messageContainer.textContent = 'Error checking back-half: ' + err.message;
+                messageContainer.className = 'alert alert-danger';
+                messageContainer.style.display = 'block';
+            });
+    });
+
+
+    document.getElementById('generateBacklinkBtn').addEventListener('click', function() {
+        let messageContainer = document.getElementById('messageContainer');
+
+        let generateUrl = '/generate-backhalf';
+
+        fetch(generateUrl, { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                if(data.backHalf) {
+                    // Populate the backHalf input field with the generated back-half
+                    document.getElementById('backHalf').value = data.backHalf;
+                    messageContainer.textContent = 'Back-half generated successfully.';
+                    messageContainer.className = 'alert alert-success';
+                } else {
+                    messageContainer.textContent = 'Unable to generate a back-half. Please try again.';
+                    messageContainer.className = 'alert alert-danger';
+                }
+                messageContainer.style.display = 'block';
+            })
+            .catch(err => {
+                messageContainer.textContent = 'Error generating back-half: ' + err.message;
+                messageContainer.className = 'alert alert-danger';
+                messageContainer.style.display = 'block';
+            });
+    });
+
+
 </script>
 
 </body>
