@@ -20,6 +20,8 @@ public interface ShortURLRepository extends MongoRepository<ShortURL, String> {
     Optional<ShortURL> findByIdAndUserId(String id, String userId);
 
     List<ShortURL> findByActiveTrueAndExpirationDateBetween(Date start, Date end);
+
+
 }
 
 

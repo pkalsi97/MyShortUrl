@@ -30,6 +30,7 @@ public class RedirectController {
         if (shortURLOptional.isPresent()) {
             ShortURL shortURL = shortURLOptional.get();
             if (shortURL.isActive() && shortURL.getExpirationDate().isAfter(LocalDateTime.now())) {
+                shortURLService.incrementClickCount(shortURL.getId());
                 return new ModelAndView("redirect:" + shortURL.getOriginalUrl());
             }
         }

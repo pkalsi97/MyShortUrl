@@ -20,6 +20,8 @@ public class ShortURL {
     private LocalDateTime expirationDate;
     private boolean active;
     private String userId;
+    private int clickCount;
+
 
     public ShortURL(String originalUrl, String shortLink, String userId) {
         this.originalUrl = originalUrl;
@@ -28,5 +30,6 @@ public class ShortURL {
         this.expirationDate = this.creationDate.plusHours(48);
         this.active = true;
         this.userId = userId;
+        this.clickCount = 0;
     }
 }

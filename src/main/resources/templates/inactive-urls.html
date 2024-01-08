@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<style>
+
+    .url-row {
+        border: 1px solid #ddd;
+        padding: 5px;
+        margin-bottom: 10px;
+        background-color: #eee0e0;
+    }
+    .url-details p {
+        margin-bottom: 0; /* Reduce bottom margin */
+        line-height: 1.5;
+    }
+</style>
+
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Inactive URLs - MyShortUrl</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Add any additional CSS here -->
+</head>
+<body>
+<header class="bg-info text-white text-center py-4">
+    <div class="container d-flex justify-content-between">
+        <h1>Inactive URLs</h1>
+        <a th:href="@{/dashboard}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</header>
+
+<div class="container mt-5">
+    <div th:if="${inactiveUrls.isEmpty()}">
+        <p>No inactive URLs found.</p>
+    </div>
+    <div th:each="url : ${inactiveUrls}" class="url-row">
+        <div class="url-details">
+            <p>Short URL: <a th:href="${url.shortLink}" th:text="${url.shortLink}">Short URL</a></p>
+            <p>Original URL: <span th:text="${url.originalUrl}">Original URL</span></p>
+            <p>Click Count: <span th:text="${url.clickCount}">0</span></p>
+            <p>Creation Date: <span th:text="${#temporals.format(url.creationDate, 'dd MMM yyyy, h:mm a')}">Creation Date</span></p>
+            <p>Expiry Time: <span th:text="${#temporals.format(url.expirationDate, 'dd MMM yyyy, h:mm a')}">Expiry Time</span></p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

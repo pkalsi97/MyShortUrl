@@ -119,4 +119,16 @@ public class ShortURLService {
         return backHalf.toString();
     }
 
+    public List<ShortURL> getInactiveShortURLsByUser(String userId) {
+        return shortURLRepository.findAllByUserIdAndActive(userId, false);
+    }
+
+    public void incrementClickCount(String shortLinkId) {
+        Optional<ShortURL> shortURLOpt = shortURLRepository.findById(shortLinkId);
+        if (shortURLOpt.isPresent()) {
+            ShortURL shortURL = shortURLOpt.get();
+            shortURL.setClickCount(shortURL.getClickCount() + 1);
+            shortURLRepository.save(shortURL);
+        }
+    }
 }

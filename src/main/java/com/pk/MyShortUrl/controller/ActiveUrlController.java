@@ -47,4 +47,15 @@ public class ActiveUrlController {
         }
         return "redirect:/active-urls";
     }
+
+
+    // for inactive urls dashboard
+    @GetMapping("/inactive-urls")
+    public ModelAndView viewInactiveUrls(Principal principal) {
+        String username = principal.getName();
+        List<ShortURL> inactiveUrls = shortURLService.getInactiveShortURLsByUser(username);
+        ModelAndView modelAndView = new ModelAndView("inactive-urls");
+        modelAndView.addObject("inactiveUrls", inactiveUrls);
+        return modelAndView;
+    }
 }

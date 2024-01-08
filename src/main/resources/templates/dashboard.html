@@ -28,7 +28,10 @@
         <div class="col-md-8">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="bold">Welcome, <span th:text="${username}">Username</span>!</h2>
-                <a th:href="@{/active-urls}" class="btn btn-primary">View Active URLs</a>
+                <div class="button-group">
+                    <a th:href="@{/active-urls}" class="btn btn-primary">Active URLs</a>
+                    <a th:href="@{/inactive-urls}" class="btn btn-secondary">Inactive URLs</a>
+                </div>
             </div>
 
             <div id="messageContainer" style="display: none;" class="alert alert-danger"></div>
