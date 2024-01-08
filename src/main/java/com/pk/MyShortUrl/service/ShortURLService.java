@@ -13,11 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +24,16 @@ public class ShortURLService {
 
     private final ShortURLRepository shortURLRepository;
     private final AppConfig appConfig;
+
+
     private static final Logger logger = LoggerFactory.getLogger(ShortURLService.class);
+    private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    private static final int BACKHALF_LENGTH = 5;
+    private static final Random random = new SecureRandom();
+
 
     public boolean isBackHalfUnique(String backHalf) {
-        return shortURLRepository.findByShortLinkAndActive(appConfig.getBaseUrl() + backHalf, true).isEmpty();
+        return shortURLRepository.findByShortLink(appConfig.getBaseUrl() + backHalf).isEmpty();
     }
 
     public ShortURL createShortURL(String originalUrl, String backHalf, String userId) {
@@ -40,7 +45,7 @@ public class ShortURLService {
             shortURL.setUserId(userId);
             shortURL.setActive(true);
             shortURL.setCreationDate(LocalDateTime.now());
-            shortURL.setExpirationDate(shortURL.getCreationDate().plusHours(48));
+            shortURL.setExpirationDate(shortURL.getCreationDate().plusHours(appConfig.getTimeAllotted()));
             shortURL.setQrCode(generateQrCode(shortLink));
             return shortURLRepository.save(shortURL);
         }
@@ -91,6 +96,27 @@ public class ShortURLService {
 
     public boolean isBackHalfValid(String backHalf) {
         return !reservedPaths.contains(backHalf);
+    }
+
+    public boolean isBackHalfAvailable(String backHalf) {
+        return shortURLRepository.findByShortLink(appConfig.getBaseUrl() + backHalf).isEmpty();
+    }
+
+    public String generateUniqueBackHalf() {
+        while (true) {
+            String backHalf = generateRandomBackHalf(BACKHALF_LENGTH);
+            if (isBackHalfUnique(backHalf)) {
+                return backHalf;
+            }
+        }
+    }
+    private String generateRandomBackHalf(int length) {
+        StringBuilder backHalf = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(CHAR_POOL.length());
+            backHalf.append(CHAR_POOL.charAt(index));
+        }
+        return backHalf.toString();
     }
 
 }
