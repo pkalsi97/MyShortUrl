@@ -65,4 +65,21 @@ public class URLShorteningController {
             return ResponseEntity.badRequest().body(Map.of("error", "An unexpected error occurred."));
         }
     }
+
+
+    /// new feature ->
+    @GetMapping("/validate-backhalf")
+    @ResponseBody
+    public ResponseEntity<?> validateBackHalf(@RequestParam String backHalf) {
+        boolean isValid = shortURLService.isBackHalfValid(backHalf);
+        boolean isAvailable = shortURLService.isBackHalfAvailable(backHalf);
+        return ResponseEntity.ok(Map.of("isValid", isValid, "isAvailable", isAvailable));
+    }
+
+    @GetMapping("/generate-backhalf")
+    @ResponseBody
+    public ResponseEntity<?> generateBackHalf() {
+        String backHalf = shortURLService.generateUniqueBackHalf();
+        return ResponseEntity.ok(Map.of("backHalf", backHalf));
+    }
 }
