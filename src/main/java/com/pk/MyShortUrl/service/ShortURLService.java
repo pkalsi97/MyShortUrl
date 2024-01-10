@@ -37,6 +37,13 @@ public class ShortURLService {
     }
 
     public ShortURL createShortURL(String originalUrl, String backHalf, String userId) {
+
+        String allowedCharsRegex = "^[A-Za-z0-9_-]+$";
+
+        if (!backHalf.matches(allowedCharsRegex)) {
+            throw new IllegalArgumentException("The backHalf contains invalid characters.");
+        }
+
         if (isBackHalfUnique(backHalf)) {
             ShortURL shortURL = new ShortURL();
             shortURL.setOriginalUrl(originalUrl);
@@ -130,5 +137,4 @@ public class ShortURLService {
     public Optional<ShortURL> findByShortLink(String shortLink) {
         return shortURLRepository.findByShortLink(shortLink);
     }
-
 }

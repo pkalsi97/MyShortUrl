@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,9 +34,9 @@ public class RestfulController {
 
     @GetMapping("/active")
     public ResponseEntity<List<ShortURLDto>> getActiveURLsForUser(Principal principal) {
+
         String userId = principal.getName();
         List<ShortURL> activeURLs = shortURLService.getActiveShortURLsByUser(userId);
-
         // Convert each ShortURL to a ShortURLDto
         List<ShortURLDto> activeUrlsDto = activeURLs.stream()
                 .map(this::convertToDto)
@@ -71,19 +72,18 @@ public class RestfulController {
     }
 
     @PostMapping("/generateCustom")
-    public ResponseEntity<ShortURLDto> generateCustomShortUrl(@RequestBody CustomUrlRequest request, Principal principal) {
+    public ResponseEntity<?> generateCustomShortUrl(@RequestBody CustomUrlRequest request, Principal principal) {
         String userId = principal.getName(); // Assuming the user's identity is determined by the Principal
 
-        if (!shortURLService.isBackHalfValid(request.getBackHalf()) || !shortURLService.isBackHalfAvailable(request.getBackHalf())) {
-            return ResponseEntity.badRequest().body(null);
-        }
-
-        ShortURL shortURL = shortURLService.createShortURL(request.getOriginalUrl(), request.getBackHalf(), userId);
-
-        if (shortURL != null) {
+        try {
+            ShortURL shortURL = shortURLService.createShortURL(request.getOriginalUrl(), request.getBackHalf(), userId);
             return ResponseEntity.ok(convertToDto(shortURL));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (IllegalArgumentException e) {
+            // Handle the specific error message returned from the service layer
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Handle other unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while creating the short URL.");
         }
     }
 
