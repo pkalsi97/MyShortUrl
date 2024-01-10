@@ -1,19 +1,18 @@
 package com.pk.MyShortUrl.controller;
 
+
 import com.pk.MyShortUrl.config.AppConfig;
 import com.pk.MyShortUrl.model.ShortURL;
-import com.pk.MyShortUrl.model.User;
 import com.pk.MyShortUrl.service.ShortURLService;
 import com.pk.MyShortUrl.service.UserService;
+import com.pk.MyShortUrl.service.webriskSearchUri;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -23,15 +22,21 @@ public class URLShorteningController {
     private final UserService userService;
     private final AppConfig appConfig;
 
+    private final webriskSearchUri webRiskSearchUri;
+
     @Autowired
-    public URLShorteningController(ShortURLService shortURLService, UserService userService, AppConfig appConfig) {
+    public URLShorteningController(ShortURLService shortURLService, UserService userService, AppConfig appConfig, webriskSearchUri webRiskSearchUri) {
         this.shortURLService = shortURLService;
         this.userService = userService;
         this.appConfig = appConfig;
+        this.webRiskSearchUri = webRiskSearchUri;
     }
 
     @GetMapping("/dashboard")
     public ModelAndView showDashboard(Principal principal) {
+        if (principal == null) {
+            return new ModelAndView("redirect:/error");
+        }
         ModelAndView modelAndView = new ModelAndView("dashboard");
         String username = principal.getName();
         modelAndView.addObject("username", username);
@@ -41,9 +46,13 @@ public class URLShorteningController {
         return modelAndView;
     }
 
+
     @PostMapping("/create-short-url")
     @ResponseBody
     public ResponseEntity<?> createShortUrl(@RequestParam String longUrl, @RequestParam String backHalf, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+        }
         String username = principal.getName();
         if (userService.getActiveURLCount(username) >= userService.getUrlLimit(username)) {
             return ResponseEntity.badRequest().body(Map.of("error", "URL limit reached."));
@@ -66,11 +75,19 @@ public class URLShorteningController {
         }
     }
 
+    @GetMapping("/create-short-url")
+    public String handleIncorrectAccessToCreateShortUrl() {
+        return "redirect:/error";
+    }
+
 
     /// new feature ->
     @GetMapping("/validate-backhalf")
     @ResponseBody
-    public ResponseEntity<?> validateBackHalf(@RequestParam String backHalf) {
+    public ResponseEntity<?> validateBackHalf(@RequestParam String backHalf, Principal principal) {
+        if (principal == null && backHalf.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+        }
         boolean isValid = shortURLService.isBackHalfValid(backHalf);
         boolean isAvailable = shortURLService.isBackHalfAvailable(backHalf);
         return ResponseEntity.ok(Map.of("isValid", isValid, "isAvailable", isAvailable));
@@ -78,8 +95,27 @@ public class URLShorteningController {
 
     @GetMapping("/generate-backhalf")
     @ResponseBody
-    public ResponseEntity<?> generateBackHalf() {
+    public ResponseEntity<?> generateBackHalf(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+        }
         String backHalf = shortURLService.generateUniqueBackHalf();
         return ResponseEntity.ok(Map.of("backHalf", backHalf));
     }
+
+    @GetMapping("/validate-original-url")
+    public ResponseEntity<?> validateOriginalUrl(@RequestParam String url, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+        }
+        if (url == null || url.isEmpty()) {
+            return ResponseEntity.badRequest().body("URL parameter is required");
+        }
+
+        boolean isSafe = webriskSearchUri.searchUri(url);
+        return ResponseEntity.ok(Map.of("isValid", isSafe));
+    }
+
+
+
 }

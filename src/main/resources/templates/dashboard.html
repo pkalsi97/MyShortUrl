@@ -19,7 +19,10 @@
 <header class="bg-info text-white text-center py-4">
     <div class="container d-flex justify-content-between align-items-center">
         <h1>Dashboard</h1>
-        <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        <div class="button-group">
+            <a th:href="@{/api-docs}" class="btn btn-primary">API Docs</a>
+            <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        </div>
     </div>
 </header>
 
@@ -45,9 +48,10 @@
                 <h3>Shorten a long URL</h3>
                 <form id="urlShorteningForm" th:action="@{/create-short-url}" method="post">
                     <div class="form-group">
-                        <label for="longUrl">Paste a long URL</label>
+                        <label for="longUrl">Paste Original URL (will be validated through Google Web Risk API)</label>
                         <input type="url" id="longUrl" name="longUrl" class="form-control" placeholder="https://example.com/page" required>
                     </div>
+                    <button type="button" id="validateOriginalUrlBtn" class="btn btn-info" style="margin-bottom: 10px;">Validate Original URL</button>
                     <div class="form-group">
                         <label for="backHalf">Enter a back-half or Click on Generate back-half</label>
                         <div class="input-group">
@@ -83,23 +87,29 @@
 <script>
     document.getElementById('urlShorteningForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        let formData = new FormData(this);
-        let messageContainer = document.getElementById('messageContainer');
-
-
+        let originalUrl = document.getElementById('longUrl').value;
         let backHalf = document.getElementById('backHalf').value;
+        let messageContainer = document.getElementById('messageContainer');
         let validPattern = /^[A-Za-z0-9-_]+$/;
 
-        if (!validPattern.test(backHalf)) {
-            messageContainer.textContent = 'The back-half can only contain alphanumeric characters, hyphens, and underscores.';
-            messageContainer.style.display = 'block';
-            return; // Stop the function here if validation fails
-        }
-
-        fetch(this.action, {
-            method: 'POST',
-            body: formData
-        })
+        // First, validate the original URL
+        fetch('/validate-original-url?url=' + encodeURIComponent(originalUrl))
+            .then(response => response.json())
+            .then(data => {
+                if (!data.isValid) {
+                    throw new Error('Original URL is not valid');
+                }
+                // Then, validate the backHalf
+                if (!validPattern.test(backHalf)) {
+                    throw new Error('Back-half is not valid');
+                }
+                // If both are valid, proceed with creating the short URL
+                let formData = new FormData(event.target);
+                return fetch(event.target.action, {
+                    method: 'POST',
+                    body: formData
+                });
+            })
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(errData => Promise.reject(errData));
@@ -107,26 +117,28 @@
                 return response.json();
             })
             .then(data => {
-                if(data.shortLink && data.qrCode) {
-                    document.getElementById('shortUrl').value = data.shortLink;
-                    document.getElementById('shortUrlDisplay').style.display = 'block';
-                    document.getElementById('downloadQRButton').setAttribute('href', 'data:image/png;base64,' + data.qrCode);
-                    document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qrCode;
-                    document.getElementById('qrCodeImg').style.display = 'block';
-
-                    // Clear and hide the message container on successful response
-                    messageContainer.textContent = '';
-                    messageContainer.style.display = 'none';
-                } else {
-                    messageContainer.textContent = 'An unexpected response was received.';
-                    messageContainer.style.display = 'block';
-                }
+                document.getElementById('shortUrl').value = data.shortLink;
+                document.getElementById('shortUrlDisplay').style.display = 'block';
+                document.getElementById('downloadQRButton').setAttribute('href', 'data:image/png;base64,' + data.qrCode);
+                document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qrCode;
+                document.getElementById('qrCodeImg').style.display = 'block';
+                messageContainer.textContent = '';
+                messageContainer.style.display = 'none';
             })
-            .catch(errorData => {
-                messageContainer.textContent = 'Error: ' + (errorData.error || 'An error occurred. Please try again.');
+            .catch(error => {
+                if (error.message === 'Original URL is not valid' && !validPattern.test(backHalf)) {
+                    messageContainer.textContent = 'Error: Both Original URL and Back-half are not valid.';
+                } else if (error.message === 'Original URL is not valid') {
+                    messageContainer.textContent = 'Error: Original URL is not valid.';
+                } else if (!validPattern.test(backHalf)) {
+                    messageContainer.textContent = 'Error: Back-half is not valid.';
+                } else {
+                    messageContainer.textContent = 'Error: ' + (error.error || 'An error occurred. Please try again.');
+                }
                 messageContainer.style.display = 'block';
             });
     });
+
 
     function copyToClipboard() {
         let shortUrl = document.getElementById('shortUrl');
@@ -204,6 +216,39 @@
                 messageContainer.style.display = 'block';
             });
     });
+
+    document.getElementById('validateOriginalUrlBtn').addEventListener('click', function() {
+        let originalUrl = document.getElementById('longUrl').value;
+        let messageContainer = document.getElementById('messageContainer');
+        
+        // Check if the original URL field is empty
+        if (!originalUrl.trim()) {
+            messageContainer.textContent = 'Please enter a URL first.';
+            messageContainer.className = 'alert alert-warning';
+            messageContainer.style.display = 'block';
+            return; // Stop the function execution here
+        }
+
+        fetch('/validate-original-url?url=' + encodeURIComponent(originalUrl))
+            .then(response => response.json())
+            .then(data => {
+                if (data.isValid) {
+                    messageContainer.textContent = 'The original URL is safe.';
+                    messageContainer.className = 'alert alert-success';
+                } else {
+                    messageContainer.textContent = 'The original URL is not valid or safe.';
+                    messageContainer.className = 'alert alert-danger';
+                }
+                messageContainer.style.display = 'block';
+            })
+            .catch(err => {
+                messageContainer.textContent = 'Error validating the URL: ' + err.message;
+                messageContainer.className = 'alert alert-danger';
+                messageContainer.style.display = 'block';
+            });
+    });
+
+
 
 
 </script>

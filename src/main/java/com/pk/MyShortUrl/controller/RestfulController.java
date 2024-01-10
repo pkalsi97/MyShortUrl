@@ -5,18 +5,13 @@ import com.pk.MyShortUrl.dto.ShortURLDto;
 import com.pk.MyShortUrl.dto.ShortUrlRequest;
 import com.pk.MyShortUrl.model.ShortURL;
 import com.pk.MyShortUrl.service.ShortURLService;
-import org.slf4j.LoggerFactory;
+import com.pk.MyShortUrl.service.webriskSearchUri;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
@@ -24,12 +19,12 @@ import java.util.stream.Collectors;
 public class RestfulController {
 
     private final ShortURLService shortURLService;
-
-
+    private final webriskSearchUri webRiskSearchUri;
 
     @Autowired
-    public RestfulController(ShortURLService shortURLService) {
+    public RestfulController(ShortURLService shortURLService, webriskSearchUri webRiskSearchUri) {
         this.shortURLService = shortURLService;
+        this.webRiskSearchUri = webRiskSearchUri;
     }
 
     @GetMapping("/active")
@@ -86,6 +81,21 @@ public class RestfulController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while creating the short URL.");
         }
     }
+
+    @GetMapping("/checkSafety")
+    public ResponseEntity<String> checkUrlSafety(@RequestParam String url) {
+        try {
+            boolean isSafe = webriskSearchUri.searchUri(url);
+            if (isSafe) {
+                return ResponseEntity.ok("URL is safe.");
+            } else {
+                return ResponseEntity.ok("URL is not safe.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An error occurred while checking URL safety.");
+        }
+    }
+
 
 
 

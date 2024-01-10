@@ -37,9 +37,12 @@ public class ShortURLService {
     }
 
     public ShortURL createShortURL(String originalUrl, String backHalf, String userId) {
+        boolean isSafe = webriskSearchUri.searchUri(originalUrl);
+        if(!isSafe){
+            throw new IllegalArgumentException("Original Url is not safe");
+        }
 
         String allowedCharsRegex = "^[A-Za-z0-9_-]+$";
-
         if (!backHalf.matches(allowedCharsRegex)) {
             throw new IllegalArgumentException("The backHalf contains invalid characters.");
         }

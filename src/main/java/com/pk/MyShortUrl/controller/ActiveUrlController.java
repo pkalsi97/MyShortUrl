@@ -30,11 +30,26 @@ public class ActiveUrlController {
 
     @GetMapping("/active-urls")
     public ModelAndView viewActiveUrls(Principal principal) {
+        if (principal == null) {
+            return new ModelAndView("redirect:/error");
+        }
         String username = principal.getName();
         List<ShortURL> activeUrls = shortURLService.getActiveShortURLsByUser(username);
         ModelAndView modelAndView = new ModelAndView("active-urls");
         modelAndView.addObject("activeUrls", activeUrls);
         modelAndView.addObject("baseUrl", appConfig.getBaseUrl());
+        return modelAndView;
+    }
+
+    @GetMapping("/inactive-urls")
+    public ModelAndView viewInactiveUrls(Principal principal) {
+        if (principal == null) {
+            return new ModelAndView("redirect:/error");
+        }
+        String username = principal.getName();
+        List<ShortURL> inactiveUrls = shortURLService.getInactiveShortURLsByUser(username);
+        ModelAndView modelAndView = new ModelAndView("inactive-urls");
+        modelAndView.addObject("inactiveUrls", inactiveUrls);
         return modelAndView;
     }
 
@@ -46,16 +61,5 @@ public class ActiveUrlController {
             userService.decrementActiveURLCount(username);
         }
         return "redirect:/active-urls";
-    }
-
-
-    // for inactive urls dashboard
-    @GetMapping("/inactive-urls")
-    public ModelAndView viewInactiveUrls(Principal principal) {
-        String username = principal.getName();
-        List<ShortURL> inactiveUrls = shortURLService.getInactiveShortURLsByUser(username);
-        ModelAndView modelAndView = new ModelAndView("inactive-urls");
-        modelAndView.addObject("inactiveUrls", inactiveUrls);
-        return modelAndView;
     }
 }

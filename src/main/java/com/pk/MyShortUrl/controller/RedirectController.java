@@ -39,4 +39,5 @@ public class RedirectController {
         modelAndView.addObject("message", "This short URL has expired or is invalid.");
         return modelAndView;
     }
+
 }
