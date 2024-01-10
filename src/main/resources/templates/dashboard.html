@@ -220,7 +220,7 @@
     document.getElementById('validateOriginalUrlBtn').addEventListener('click', function() {
         let originalUrl = document.getElementById('longUrl').value;
         let messageContainer = document.getElementById('messageContainer');
-        
+
         // Check if the original URL field is empty
         if (!originalUrl.trim()) {
             messageContainer.textContent = 'Please enter a URL first.';
