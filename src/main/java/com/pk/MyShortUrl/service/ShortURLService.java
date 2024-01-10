@@ -105,7 +105,7 @@ public class ShortURLService {
             }
         }
     }
-    private String generateRandomBackHalf(int length) {
+    public String generateRandomBackHalf(int length) {
         StringBuilder backHalf = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             int index = random.nextInt(CHAR_POOL.length());
@@ -126,4 +126,9 @@ public class ShortURLService {
             shortURLRepository.save(shortURL);
         }
     }
+
+    public Optional<ShortURL> findByShortLink(String shortLink) {
+        return shortURLRepository.findByShortLink(shortLink);
+    }
+
 }

@@ -14,7 +14,6 @@ import java.util.Set;
 @Getter
 @Setter
 public class AppConfig {
-
     private String baseUrl;
     private int timeAllotted;
     private Set<String> reservedPaths;
