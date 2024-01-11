@@ -50,13 +50,13 @@ public class ShortURLService {
         if (isBackHalfUnique(backHalf)) {
             ShortURL shortURL = new ShortURL();
             shortURL.setOriginalUrl(originalUrl);
-            String shortLink = appConfig.getBaseUrl() + backHalf;
+            String shortLink = appConfig.getBaseUrl() +"/"+backHalf;
             shortURL.setShortLink(shortLink);
             shortURL.setUserId(userId);
             shortURL.setActive(true);
             shortURL.setCreationDate(LocalDateTime.now());
             shortURL.setExpirationDate(shortURL.getCreationDate().plusHours(appConfig.getTimeAllotted()));
-            shortURL.setQrCode(generateQrCode(shortLink));
+            shortURL.setQrCode(generateQrCode(originalUrl));
             return shortURLRepository.save(shortURL);
         }
         return null;
@@ -90,8 +90,22 @@ public class ShortURLService {
 
     public boolean deactivateUrl(String urlId, String username) {
         Optional<ShortURL> shortURLOpt = shortURLRepository.findById(urlId);
+        if (shortURLOpt.isPresent()) {
+            ShortURL shortURL = shortURLOpt.get();
+            if (shortURL.getUserId().equals(username) && shortURL.isActive()) {
+                shortURL.setActive(false);
+                shortURLRepository.save(shortURL);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean deactivateUrlByShortLink(String shortLink, String username) {
+        Optional<ShortURL> shortURLOpt = shortURLRepository.findByShortLink(shortLink);
         if (shortURLOpt.isPresent() && shortURLOpt.get().getUserId().equals(username)) {
             ShortURL shortURL = shortURLOpt.get();
+            if(!shortURL.isActive()) return false;
             shortURL.setActive(false);
             shortURLRepository.save(shortURL);
             return true;
@@ -104,7 +118,7 @@ public class ShortURLService {
     }
 
     public boolean isBackHalfAvailable(String backHalf) {
-        return shortURLRepository.findByShortLink(appConfig.getBaseUrl() + backHalf).isEmpty();
+        return shortURLRepository.findByShortLink(appConfig.getBaseUrl()+"/"+backHalf).isEmpty();
     }
 
     public String generateUniqueBackHalf() {

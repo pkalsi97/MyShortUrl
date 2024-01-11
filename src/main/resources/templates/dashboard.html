@@ -39,11 +39,6 @@
 
             <div id="messageContainer" style="display: none;" class="alert alert-danger"></div>
 
-<!--            <div class="user-info mb-3">-->
-<!--                <div class="mb-2">Total Assigned URL: <span th:text="${totalAssignedUrl}">5</span></div>-->
-<!--                <div>Total Active URL: <span th:text="${totalActiveUrl}">0</span></div>-->
-<!--            </div>-->
-
             <div class="url-shortening-section">
                 <h3>Shorten a long URL</h3>
                 <form id="urlShorteningForm" th:action="@{/create-short-url}" method="post">
@@ -56,7 +51,7 @@
                         <label for="backHalf">Enter a back-half or Click on Generate back-half</label>
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text" th:text="${baseUrl}">http://localhost/</span>
+                                <span class="input-group-text" th:text="${baseUrl}"></span>
                             </div>
                             <input type="text" id="backHalf" name="backHalf" class="form-control" placeholder="my-short-link" required>
                         </div>

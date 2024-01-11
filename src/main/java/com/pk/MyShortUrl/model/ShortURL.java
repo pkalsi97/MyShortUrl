@@ -1,5 +1,6 @@
 package com.pk.MyShortUrl.model;
 
+import io.grpc.netty.shaded.io.netty.channel.Channel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -32,4 +33,5 @@ public class ShortURL {
         this.userId = userId;
         this.clickCount = 0;
     }
+
 }

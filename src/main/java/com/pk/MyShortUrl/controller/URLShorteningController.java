@@ -32,21 +32,6 @@ public class URLShorteningController {
         this.webRiskSearchUri = webRiskSearchUri;
     }
 
-    @GetMapping("/dashboard")
-    public ModelAndView showDashboard(Principal principal) {
-        if (principal == null) {
-            return new ModelAndView("redirect:/error");
-        }
-        ModelAndView modelAndView = new ModelAndView("dashboard");
-        String username = principal.getName();
-        modelAndView.addObject("username", username);
-        modelAndView.addObject("baseUrl", appConfig.getBaseUrl());
-        modelAndView.addObject("totalAssignedUrl", userService.getUrlLimit(username));
-        modelAndView.addObject("totalActiveUrl", userService.getActiveURLCount(username));
-        return modelAndView;
-    }
-
-
     @PostMapping("/create-short-url")
     @ResponseBody
     public ResponseEntity<?> createShortUrl(@RequestParam String longUrl, @RequestParam String backHalf, Principal principal) {

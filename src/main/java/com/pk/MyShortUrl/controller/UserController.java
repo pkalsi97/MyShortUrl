@@ -1,9 +1,11 @@
 package com.pk.MyShortUrl.controller;
 
+import com.pk.MyShortUrl.config.AppConfig;
 import com.pk.MyShortUrl.model.User;
 import com.pk.MyShortUrl.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,11 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    private final AppConfig appConfig;
+
+    public UserController(AppConfig appConfig) {
+        this.appConfig = appConfig;
+    }
 
     @GetMapping("/register")
     public ModelAndView showRegistrationForm(HttpServletResponse response) {

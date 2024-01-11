@@ -21,8 +21,8 @@
     .button-group { display: flex; align-items: center; margin-top: 10px; }
     .btn-space { margin-right: 10px; }
     .url-details p {
-      margin-bottom: 2px; /* Reduce space between paragraphs */
-      font-size: 0.9em; /* Optional: Adjust font size if needed */
+      margin-bottom: 2px;
+      font-size: 0.9em;
     }
 
   </style>
@@ -61,19 +61,5 @@
     </div>
   </div>
 </div>
-
-<script>
-  function copyToClipboard(id) {
-    const shortUrlElement = document.getElementById(id);
-    if (shortUrlElement) {
-      navigator.clipboard.writeText(shortUrlElement.href)
-              .then(() => alert('Short URL copied to clipboard!'))
-              .catch(err => console.error('Could not copy text: ', err));
-    } else {
-      console.error('Element with ID not found: ', id);
-    }
-  }
-</script>
-
 </body>
 </html>

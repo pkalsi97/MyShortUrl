@@ -1,6 +1,7 @@
 package com.pk.MyShortUrl.controller;
 
 import com.pk.MyShortUrl.dto.CustomUrlRequest;
+import com.pk.MyShortUrl.dto.DisableUrlRequest;
 import com.pk.MyShortUrl.dto.ShortURLDto;
 import com.pk.MyShortUrl.dto.ShortUrlRequest;
 import com.pk.MyShortUrl.model.ShortURL;
@@ -9,9 +10,11 @@ import com.pk.MyShortUrl.service.webriskSearchUri;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -74,13 +77,12 @@ public class RestfulController {
             ShortURL shortURL = shortURLService.createShortURL(request.getOriginalUrl(), request.getBackHalf(), userId);
             return ResponseEntity.ok(convertToDto(shortURL));
         } catch (IllegalArgumentException e) {
-            // Handle the specific error message returned from the service layer
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            // Handle other unexpected errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while creating the short URL.");
         }
     }
+
 
     @GetMapping("/checkSafety")
     public ResponseEntity<String> checkUrlSafety(@RequestParam String url) {
@@ -97,7 +99,17 @@ public class RestfulController {
     }
 
 
+    @PostMapping("/disableUrl")
+    public ResponseEntity<?> disableUrl(@RequestBody DisableUrlRequest request, Principal principal) {
+        String userId = principal.getName();
 
+        boolean isDisabled = shortURLService.deactivateUrlByShortLink(request.getShortUrl(), userId);
+        if (isDisabled) {
+            return ResponseEntity.ok(Map.of("success", true, "message", "URL successfully disabled"));
+        } else {
+            return ResponseEntity.ok(Map.of("success", false, "message", "URL not found or already inactive"));
+        }
+    }
 
     private ShortURLDto convertToDto(ShortURL shortURL) {
         ShortURLDto dto = new ShortURLDto();
