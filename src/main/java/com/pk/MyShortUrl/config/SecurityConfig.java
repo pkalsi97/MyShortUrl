@@ -1,6 +1,7 @@
 package com.pk.MyShortUrl.config;
 
 import com.pk.MyShortUrl.service.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 
 @Configuration
@@ -33,13 +34,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register", "/login", "/logout", "/public/**", "/{shortLink}","/authenticate","/api/url/**").permitAll()
+                        .requestMatchers("/register", "/login", "/logout", "/public/**", "/{shortLink}").permitAll()
                         .anyRequest().authenticated()
-                )
-                .exceptionHandling(exceptionHandling ->
-                        exceptionHandling.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 )
                 .formLogin(formLogin -> formLogin
                         .loginPage("/login").permitAll()
@@ -51,6 +48,10 @@ public class SecurityConfig {
                 )
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+                .csrf(csrf ->
+                        csrf
+                                .ignoringRequestMatchers("/api/url/**", "/authenticate")
                 )
                 .userDetailsService(userDetailsService)
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

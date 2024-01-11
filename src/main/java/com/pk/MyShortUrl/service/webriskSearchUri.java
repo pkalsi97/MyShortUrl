@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.google.webrisk.v1.ThreatType.*;
 @Service
 public class webriskSearchUri {
     public static boolean searchUri(String uri) {
@@ -24,12 +23,7 @@ public class webriskSearchUri {
 
                 SearchUrisResponse searchUrisResponse = webRiskServiceClient.searchUris(searchUrisRequest);
 
-                if (!searchUrisResponse.getThreat().getThreatTypesList().isEmpty()) {
-                    //System.out.println(searchUrisResponse);
-                    return false;
-                } else {
-                    return true;
-                }
+                return searchUrisResponse.getThreat().getThreatTypesList().isEmpty();
             }
         } catch (IOException e) {
             System.err.println("IOException occurred: " + e.getMessage());
