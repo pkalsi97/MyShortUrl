@@ -32,10 +32,6 @@ public class ShortURLService {
     private static final Random random = new SecureRandom();
 
 
-    public boolean isBackHalfUnique(String backHalf) {
-        return shortURLRepository.findByShortLink(appConfig.getBaseUrl() + backHalf).isEmpty();
-    }
-
     public ShortURL createShortURL(String originalUrl, String backHalf, String userId) {
         boolean isSafe = webriskSearchUri.searchUri(originalUrl);
         if(!isSafe){
@@ -76,18 +72,6 @@ public class ShortURLService {
         }
     }
 
-    public List<ShortURL> getAllShortURLsByUser(String userId) {
-        return shortURLRepository.findAllByUserId(userId);
-    }
-
-    public Optional<ShortURL> getShortURLByShortLink(String shortLink) {
-        return shortURLRepository.findByShortLink(shortLink);
-    }
-
-    public List<ShortURL> getActiveShortURLsByUser(String userId) {
-        return shortURLRepository.findAllByUserIdAndActive(userId, true);
-    }
-
     public boolean deactivateUrl(String urlId, String username) {
         Optional<ShortURL> shortURLOpt = shortURLRepository.findById(urlId);
         if (shortURLOpt.isPresent()) {
@@ -101,6 +85,7 @@ public class ShortURLService {
         return false;
     }
 
+
     public boolean deactivateUrlByShortLink(String shortLink, String username) {
         Optional<ShortURL> shortURLOpt = shortURLRepository.findByShortLink(shortLink);
         if (shortURLOpt.isPresent() && shortURLOpt.get().getUserId().equals(username)) {
@@ -111,14 +96,6 @@ public class ShortURLService {
             return true;
         }
         return false;
-    }
-
-    public boolean isBackHalfValid(String backHalf) {
-        return !appConfig.getReservedPaths().contains(backHalf);
-    }
-
-    public boolean isBackHalfAvailable(String backHalf) {
-        return shortURLRepository.findByShortLink(appConfig.getBaseUrl()+"/"+backHalf).isEmpty();
     }
 
     public String generateUniqueBackHalf() {
@@ -153,5 +130,26 @@ public class ShortURLService {
 
     public Optional<ShortURL> findByShortLink(String shortLink) {
         return shortURLRepository.findByShortLink(shortLink);
+    }
+
+
+    public List<ShortURL> getAllShortURLsByUser(String userId) {
+        return shortURLRepository.findAllByUserId(userId);
+    }
+
+    public Optional<ShortURL> getShortURLByShortLink(String shortLink) {
+        return shortURLRepository.findByShortLink(shortLink);
+    }
+
+    public List<ShortURL> getActiveShortURLsByUser(String userId) {
+        return shortURLRepository.findAllByUserIdAndActive(userId, true);
+    }
+
+    public boolean isBackHalfUnique(String backHalf) {
+        return shortURLRepository.findByShortLink(appConfig.getBaseUrl()+"/"+ backHalf).isEmpty();
+    }
+
+    public boolean isBackHalfValid(String backHalf) {
+        return !appConfig.getReservedPaths().contains(backHalf);
     }
 }

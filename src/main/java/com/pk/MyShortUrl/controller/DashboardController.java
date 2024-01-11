@@ -52,15 +52,6 @@ public class DashboardController {
         }
         return modelAndView;
     }
-
-    @GetMapping("/api-docs-all")
-    public ModelAndView showApiDocs(HttpServletResponse response) {
-        ModelAndView modelAndView = new ModelAndView("api-docs-all");
-        modelAndView.addObject("baseUrl", appConfig.getBaseUrl());
-        clearResponseCache(response);
-        return modelAndView;
-    }
-
     @GetMapping("/active-urls")
     public ModelAndView viewActiveUrls(Principal principal) {
         if (principal == null) {

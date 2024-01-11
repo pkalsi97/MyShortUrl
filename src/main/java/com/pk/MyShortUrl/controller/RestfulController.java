@@ -58,7 +58,8 @@ public class RestfulController {
 
     @PostMapping("/generateRandom")
     public ResponseEntity<ShortURLDto> generateRandomShortUrl(@RequestBody ShortUrlRequest request, Principal principal) {
-        String userId = principal.getName(); // Assuming the user's identity is determined by the Principal
+        String originalUrl = request.getOriginalUrl();
+        String userId = principal.getName();
         String backHalf = shortURLService.generateUniqueBackHalf();
         ShortURL shortURL = shortURLService.createShortURL(request.getOriginalUrl(), backHalf, userId);
 
@@ -71,8 +72,7 @@ public class RestfulController {
 
     @PostMapping("/generateCustom")
     public ResponseEntity<?> generateCustomShortUrl(@RequestBody CustomUrlRequest request, Principal principal) {
-        String userId = principal.getName(); // Assuming the user's identity is determined by the Principal
-
+        String userId = principal.getName();
         try {
             ShortURL shortURL = shortURLService.createShortURL(request.getOriginalUrl(), request.getBackHalf(), userId);
             return ResponseEntity.ok(convertToDto(shortURL));

@@ -74,7 +74,7 @@ public class URLShorteningController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
         }
         boolean isValid = shortURLService.isBackHalfValid(backHalf);
-        boolean isAvailable = shortURLService.isBackHalfAvailable(backHalf);
+        boolean isAvailable = shortURLService.isBackHalfUnique(backHalf);
         return ResponseEntity.ok(Map.of("isValid", isValid, "isAvailable", isAvailable));
     }
 

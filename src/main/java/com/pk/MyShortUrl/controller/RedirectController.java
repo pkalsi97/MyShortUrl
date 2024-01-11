@@ -24,7 +24,7 @@ public class RedirectController {
 
     @GetMapping("/{shortLink}")
     public ModelAndView redirectToOriginalUrl(@PathVariable String shortLink) {
-        String fullShortLink = baseUrl + shortLink;
+        String fullShortLink = baseUrl +"/"+shortLink;
         Optional<ShortURL> shortURLOptional = shortURLService.getShortURLByShortLink(fullShortLink);
 
         if (shortURLOptional.isPresent()) {

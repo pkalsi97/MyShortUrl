@@ -4,40 +4,64 @@
     <meta charset="UTF-8">
     <title>API Dashboard - MyShortUrl</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+
+        .card {
+            margin: 1px 0;
+            padding: 10px;
+            border-width: 1px;
+        }
+
+        .card-title {
+            margin-bottom: 2px;
+        }
+
+        .card-body {
+            padding: 10px;
+        }
+
+        .card-body > *:not(:last-child) {
+            margin-bottom: 5px;
+        }
+    </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
         /*<![CDATA[*/
         var appBaseUrl = /*[[${baseUrl}]]*/ 'http://localhost:8080/'; // Fallback URL
         /*]]>*/
         $(document).ready(function() {
-            $('#generateTokenBtn').click(function() {
-                generateToken();
-            });
-
-            $('#copyTokenBtn').click(function() {
-                copyToken();
-            });
+            $('#generateTokenBtn').click(function() { generateToken(); });
+            $('#copyTokenBtn').click(function() { copyToken(); });
 
             $('#apiEndpoint').change(function() {
+                var selectedOption = $(this).val();
+                if (selectedOption === '/authenticate') {
+                    $('#apiKeyContainer').hide();
+                    $('#sendRequestBtn').hide();
+                    updateCurlInstructionsForAuthenticate();
+                } else {
+                    $('#apiKeyContainer').show();
+                    $('#sendRequestBtn').show();
+                    updateCurlInstructions();
+                }
                 updateRequestInputFields();
+                updateApiDescription();
                 $('#apiResponse').empty();
-                updateCurlInstructions();
             });
 
-            $('#sendRequestBtn').click(function() {
-                sendApiRequest();
-            });
+            $('#sendRequestBtn').click(function() { sendApiRequest(); });
 
-            updateRequestInputFields(); // Initialize on page load
+            // Initialize on page load
+            updateRequestInputFields();
+            $('#apiEndpoint').change(); // Trigger change to set initial state
         });
+
+
 
         function generateToken() {
             var username = $('#username').val();
             var password = $('#password').val();
-            var authRequest = {
-                username: username,
-                password: password
-            };
+            var authRequest = { username: username, password: password };
 
             $.ajax({
                 url: '/authenticate',
@@ -48,11 +72,10 @@
                     var token = 'Bearer ' + data.jwt;
                     $('#tokenValue').val(token);
                     $('#copyTokenBtn').prop('disabled', false);
-                    console.log("Token generated successfully");
+                    $('#messageArea2').text('Token Generated!').show();
                 },
                 error: function(response) {
-                    console.error('Error generating token:', response);
-                    alert('Failed to generate token. ' + response.responseJSON.error);
+                    $('#messageArea2').text('Failed to generate token incorrect username/password!').show();
                 }
             });
         }
@@ -66,7 +89,7 @@
 
         function updateRequestInputFields() {
             var selectedOption = $('#apiEndpoint').val();
-            $('#apiRequestInputs').empty(); // Clear existing inputs
+            $('#apiRequestInputs').empty();
 
             switch (selectedOption) {
                 case '/api/url/generateCustom':
@@ -82,26 +105,49 @@
                     break;
             }
         }
+        function updateCurlInstructionsForAuthenticate() {
+            var curlCommand = "curl -X POST " +
+                appBaseUrl + "/authenticate \\\n" +
+                "-H 'Content-Type: application/json' \\\n" +
+                "-d '{\"username\": \"<username>\", \"password\": \"<password>\"}'";
+            $('#curlInstructions').text(curlCommand);
+        }
 
         function sendApiRequest() {
-            var token = $('#tokenValue').val();
+            var token = $('#apiKey').val();
             var endpoint = $('#apiEndpoint').val();
             var requestData = {};
             var requestType = 'POST';
 
+            if (!token) {
+                $('#messageArea').text("Please generate a token before making an API call.").show();
+                return;
+            } else {
+                $('#messageArea').text("Request Successful").show();
+            }
+
             if (endpoint === '/api/url/generateCustom') {
-                requestData = {
-                    originalUrl: $('#originalUrl').val(),
-                    backHalf: $('#backHalf').val()
-                };
+                var originalUrl = $('#originalUrl').val();
+                var backHalf = $('#backHalf').val();
+                if (!originalUrl || !backHalf) {
+                    $('#messageArea').text("Error: Please fill in all required fields.").show();
+                    return;
+                }
+                requestData = { originalUrl: originalUrl, backHalf: backHalf };
             } else if (endpoint === '/api/url/generateRandom') {
-                requestData = {
-                    originalUrl: $('#originalUrlRandom').val()
-                };
+                var originalUrlRandom = $('#originalUrlRandom').val();
+                if (!originalUrlRandom) {
+                    $('#messageArea').text("Error: Please fill in the Original URL field.").show();
+                    return;
+                }
+                requestData = { originalUrl: originalUrlRandom };
             } else if (endpoint === '/api/url/disableUrl') {
-                requestData = {
-                    shortUrl: $('#shortUrlInput').val()
-                };
+                var shortUrlInput = $('#shortUrlInput').val();
+                if (!shortUrlInput) {
+                    $('#messageArea').text("Error: Please fill in the Short URL field.").show();
+                    return;
+                }
+                requestData = { shortUrl: shortUrlInput };
             } else {
                 requestType = 'GET';
             }
@@ -121,13 +167,12 @@
             });
         }
 
-
         function updateCurlInstructions() {
             var selectedOption = $('#apiEndpoint').val();
-            var baseUrl =appBaseUrl;
+            var baseUrl = appBaseUrl;
             var curlCommand = "curl -X ";
             var endpoint = baseUrl + selectedOption;
-            var token = "<YOUR_TOKEN>";
+            var token = "<YOUR_TOKEN>"; // Placeholder for the token
             var dataString = "";
 
             switch (selectedOption) {
@@ -155,6 +200,35 @@
             $('#curlInstructions').text(curlCommand);
         }
 
+        function updateApiDescription() {
+            var selectedOption = $('#apiEndpoint').val();
+            var descriptionText = '';
+
+            switch (selectedOption) {
+                case '/authenticate':
+                    descriptionText = 'Generate token';
+                    break;
+                case '/api/url/active':
+                    descriptionText = 'Get Active URLs: Retrieves a list of URLs that are currently active for the user.';
+                    break;
+                case '/api/url/inactive':
+                    descriptionText = 'Get Inactive URLs: Fetches a list of URLs that are no longer active for the user.';
+                    break;
+                case '/api/url/generateRandom':
+                    descriptionText = 'Generate Random Short URL: Creates a new short URL with a randomly generated back-half.';
+                    break;
+                case '/api/url/generateCustom':
+                    descriptionText = 'Generate Custom Short URL: Allows the user to create a short URL with a custom back-half.';
+                    break;
+                case '/api/url/disableUrl':
+                    descriptionText = 'Disable URL: Deactivates a specified short URL, making it inactive.';
+                    break;
+                default:
+                    descriptionText = 'Select an API Endpoint to view its description.';
+                    break;
+            }
+            $('#apiDescription').text(descriptionText);
+        }
     </script>
 </head>
 <body>
@@ -166,6 +240,7 @@
 </header>
 
 <div class="container mt-4">
+    <div id="messageArea2" class="alert alert-warning" style="display: none;"></div>
     <div class="row">
         <div class="col-md-4">
             <div class="form-group">
@@ -204,16 +279,30 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">Test API Endpoints</h5>
+            <div id="messageArea" class="alert alert-warning" style="display: none;"></div>
             <select id="apiEndpoint" class="form-control mb-2">
-                <option value="" disabled selected>Select an API Endpoint</option>
+                <option value="/authenticate" selected>Authenticate</option>
                 <option value="/api/url/active">Get Active URLs</option>
                 <option value="/api/url/inactive">Get Inactive URLs</option>
                 <option value="/api/url/generateRandom">Generate Random Short URL</option>
                 <option value="/api/url/generateCustom">Generate Custom Short URL</option>
                 <option value="/api/url/disableUrl">Disable URL</option>
             </select>
+            <div id="apiKeyContainer" style="display: none;">
+                <div class="form-group">
+                    <label for="apiKey">API Key:</label>
+                    <input type="text" id="apiKey" class="form-control" placeholder="Enter your API key here">
+                </div>
+            </div>
             <div id="apiRequestInputs"></div>
             <button id="sendRequestBtn" class="btn btn-primary">Send Request</button>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">API Description</h5>
+            <p id="apiDescription" class="bg-light p-3">Select an API Endpoint to view its description.</p>
         </div>
     </div>
 
