@@ -98,7 +98,6 @@
                 if (!validPattern.test(backHalf)) {
                     throw new Error('Back-half is not valid');
                 }
-                // If both are valid, proceed with creating the short URL
                 let formData = new FormData(event.target);
                 return fetch(event.target.action, {
                     method: 'POST',

@@ -13,7 +13,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class AppConfig {
-    private String baseUrl;
+    public String baseUrl;
     private int timeAllotted;
     private Set<String> reservedPaths;
 }

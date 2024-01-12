@@ -26,9 +26,13 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
-        /*<![CDATA[*/
-        var appBaseUrl = /*[[${baseUrl}]]*/ 'http://localhost:8080/'; // Fallback URL
-        /*]]>*/
+
+        $.ajax({
+            url: '/api/config',
+            success: function(data) {
+                appBaseUrl = data.baseUrl;
+            }
+        });
         $(document).ready(function() {
             $('#generateTokenBtn').click(function() { generateToken(); });
             $('#copyTokenBtn').click(function() { copyToken(); });
@@ -51,9 +55,9 @@
 
             $('#sendRequestBtn').click(function() { sendApiRequest(); });
 
-            // Initialize on page load
             updateRequestInputFields();
-            $('#apiEndpoint').change(); // Trigger change to set initial state
+            $('#apiEndpoint').change();
+            updateCurlInstructionsForAuthenticate();
         });
 
 
@@ -104,13 +108,6 @@
                 default:
                     break;
             }
-        }
-        function updateCurlInstructionsForAuthenticate() {
-            var curlCommand = "curl -X POST " +
-                appBaseUrl + "/authenticate \\\n" +
-                "-H 'Content-Type: application/json' \\\n" +
-                "-d '{\"username\": \"<username>\", \"password\": \"<password>\"}'";
-            $('#curlInstructions').text(curlCommand);
         }
 
         function sendApiRequest() {
@@ -199,6 +196,15 @@
                 "-d '" + dataString + "'";
             $('#curlInstructions').text(curlCommand);
         }
+
+        function updateCurlInstructionsForAuthenticate() {
+            var curlCommand = "curl -X POST " +
+                appBaseUrl + "/authenticate \\\n" +
+                "-H 'Content-Type: application/json' \\\n" +
+                "-d '{\"username\": \"<username>\", \"password\": \"<password>\"}'";
+            $('#curlInstructions').text(curlCommand);
+        }
+
 
         function updateApiDescription() {
             var selectedOption = $('#apiEndpoint').val();
