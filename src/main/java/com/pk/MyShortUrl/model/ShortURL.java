@@ -1,17 +1,22 @@
 package com.pk.MyShortUrl.model;
-
-import io.grpc.netty.shaded.io.netty.channel.Channel;
+// for reduction of boilerplate code.
 import lombok.Data;
 import lombok.NoArgsConstructor;
+// annotating fields to the database
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+// to fetch th date and time
 import java.time.LocalDateTime;
 
+
+// data will be stored in the collection "shorturls". if not present Mongodb will automatically
+// generate this collection.
 @Document(collection = "shorturls")
 @Data
 @NoArgsConstructor
 public class ShortURL {
 
+    // fields required to be stored in the database
     @Id
     private String id;
     private String originalUrl;
@@ -22,16 +27,5 @@ public class ShortURL {
     private boolean active;
     private String userId;
     private int clickCount;
-
-
-    public ShortURL(String originalUrl, String shortLink, String userId) {
-        this.originalUrl = originalUrl;
-        this.shortLink = shortLink;
-        this.creationDate = LocalDateTime.now();
-        this.expirationDate = this.creationDate.plusHours(48);
-        this.active = true;
-        this.userId = userId;
-        this.clickCount = 0;
-    }
 
 }
