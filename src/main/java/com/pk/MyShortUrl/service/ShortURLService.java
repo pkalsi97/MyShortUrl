@@ -31,18 +31,30 @@ public class ShortURLService {
     private static final int BACKHALF_LENGTH = 5;
     private static final Random random = new SecureRandom();
 
-
+    // takes care of creation of both custom and random
     public ShortURL createShortURL(String originalUrl, String backHalf, String userId) {
+        // use Google webrisk API to  see if Original url is on any of the unsafe list
         boolean isSafe = webriskSearchUri.searchUri(originalUrl);
         if(!isSafe){
             throw new IllegalArgumentException("Original Url is not safe");
         }
-
+        // check if back half contains any invalid characters
         String allowedCharsRegex = "^[A-Za-z0-9_-]+$";
         if (!backHalf.matches(allowedCharsRegex)) {
             throw new IllegalArgumentException("The backHalf contains invalid characters.");
         }
 
+        // Check if the original URL is the same as the short URL
+        String shortLinkCheck = appConfig.getBaseUrl() + "/" + backHalf;
+        if (originalUrl.equals(shortLinkCheck)) {
+            throw new IllegalArgumentException("Original URL cannot be the same as the short URL.");
+        }
+        // Check if the original URL is a short URL already in the database
+        if (shortURLRepository.existsByShortLink(originalUrl)) {
+            throw new IllegalArgumentException("The provided URL is already a short URL.");
+        }
+
+        // if the back half is unique proceed ->
         if (isBackHalfUnique(backHalf)) {
             ShortURL shortURL = new ShortURL();
             shortURL.setOriginalUrl(originalUrl);
@@ -58,6 +70,7 @@ public class ShortURLService {
         return null;
     }
 
+    // use google zxing to generate the QR code
     private String generateQrCode(String text) {
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -72,6 +85,7 @@ public class ShortURLService {
         }
     }
 
+    // Method to deactivate the url by id
     public boolean deactivateUrl(String urlId, String username) {
         Optional<ShortURL> shortURLOpt = shortURLRepository.findById(urlId);
         if (shortURLOpt.isPresent()) {
@@ -85,7 +99,7 @@ public class ShortURLService {
         return false;
     }
 
-
+    // method to deactivate url by shortlist
     public boolean deactivateUrlByShortLink(String shortLink, String username) {
         Optional<ShortURL> shortURLOpt = shortURLRepository.findByShortLink(shortLink);
         if (shortURLOpt.isPresent() && shortURLOpt.get().getUserId().equals(username)) {
@@ -98,6 +112,7 @@ public class ShortURLService {
         return false;
     }
 
+    // METHOD TO GENERATE RANDOM UNIQUE BACKHALF
     public String generateUniqueBackHalf() {
         while (true) {
             String backHalf = generateRandomBackHalf(BACKHALF_LENGTH);
@@ -106,19 +121,23 @@ public class ShortURLService {
             }
         }
     }
+    //
     public String generateRandomBackHalf(int length) {
         StringBuilder backHalf = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
+            //get random index
             int index = random.nextInt(CHAR_POOL.length());
             backHalf.append(CHAR_POOL.charAt(index));
         }
         return backHalf.toString();
     }
 
+    // get list of inactive urls
     public List<ShortURL> getInactiveShortURLsByUser(String userId) {
         return shortURLRepository.findAllByUserIdAndActive(userId, false);
     }
 
+    //increment click count of short url
     public void incrementClickCount(String shortLinkId) {
         Optional<ShortURL> shortURLOpt = shortURLRepository.findById(shortLinkId);
         if (shortURLOpt.isPresent()) {
@@ -127,28 +146,24 @@ public class ShortURLService {
             shortURLRepository.save(shortURL);
         }
     }
-
-    public Optional<ShortURL> findByShortLink(String shortLink) {
-        return shortURLRepository.findByShortLink(shortLink);
-    }
-
-
+    //Get all short urls by userid
     public List<ShortURL> getAllShortURLsByUser(String userId) {
         return shortURLRepository.findAllByUserId(userId);
     }
 
+    // get all short url by shortlink
     public Optional<ShortURL> getShortURLByShortLink(String shortLink) {
         return shortURLRepository.findByShortLink(shortLink);
     }
-
+    // get active short links
     public List<ShortURL> getActiveShortURLsByUser(String userId) {
         return shortURLRepository.findAllByUserIdAndActive(userId, true);
     }
-
+    // check if back half is unique
     public boolean isBackHalfUnique(String backHalf) {
         return shortURLRepository.findByShortLink(appConfig.getBaseUrl()+"/"+ backHalf).isEmpty();
     }
-
+    //check if the back half is valid
     public boolean isBackHalfValid(String backHalf) {
         return !appConfig.getReservedPaths().contains(backHalf);
     }

@@ -26,17 +26,22 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
-
+        // get base url so that it can be added to CURL instructions
         $.ajax({
             url: '/api/config',
             success: function(data) {
                 appBaseUrl = data.baseUrl;
             }
         });
+
         $(document).ready(function() {
+            // Load the document
+            // Generate token
             $('#generateTokenBtn').click(function() { generateToken(); });
+            // copy token
             $('#copyTokenBtn').click(function() { copyToken(); });
 
+            //  dynamically hide fileds and buttons depending on chosen option
             $('#apiEndpoint').change(function() {
                 var selectedOption = $(this).val();
                 if (selectedOption === '/authenticate') {
@@ -63,21 +68,26 @@
 
 
         function generateToken() {
+            // used to generate token
             var username = $('#username').val();
             var password = $('#password').val();
+            // prepare the body for request
             var authRequest = { username: username, password: password };
 
             $.ajax({
+                // make the request to Authenticate controller
                 url: '/authenticate',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(authRequest),
+                //if successful -> display the Token with Bearer added in the front
                 success: function(data) {
                     var token = 'Bearer ' + data.jwt;
                     $('#tokenValue').val(token);
                     $('#copyTokenBtn').prop('disabled', false);
                     $('#messageArea2').text('Token Generated!').show();
                 },
+                // else display error
                 error: function(response) {
                     $('#messageArea2').text('Failed to generate token incorrect username/password!').show();
                 }
@@ -85,6 +95,7 @@
         }
 
         function copyToken() {
+            // usedto copy the token
             var copyText = document.getElementById("tokenValue");
             copyText.select();
             document.execCommand("copy");
@@ -92,6 +103,7 @@
         }
 
         function updateRequestInputFields() {
+            // update fields for  post request
             var selectedOption = $('#apiEndpoint').val();
             $('#apiRequestInputs').empty();
 
@@ -111,18 +123,19 @@
         }
 
         function sendApiRequest() {
+            // send api request
             var token = $('#apiKey').val();
             var endpoint = $('#apiEndpoint').val();
             var requestData = {};
             var requestType = 'POST';
-
+            // pre checks before making  the call
             if (!token) {
                 $('#messageArea').text("Please generate a token before making an API call.").show();
                 return;
             } else {
                 $('#messageArea').text("Request Successful").show();
             }
-
+            // generate custom
             if (endpoint === '/api/url/generateCustom') {
                 var originalUrl = $('#originalUrl').val();
                 var backHalf = $('#backHalf').val();
@@ -131,6 +144,7 @@
                     return;
                 }
                 requestData = { originalUrl: originalUrl, backHalf: backHalf };
+                // generate random
             } else if (endpoint === '/api/url/generateRandom') {
                 var originalUrlRandom = $('#originalUrlRandom').val();
                 if (!originalUrlRandom) {
@@ -139,6 +153,7 @@
                 }
                 requestData = { originalUrl: originalUrlRandom };
             } else if (endpoint === '/api/url/disableUrl') {
+                // disable url
                 var shortUrlInput = $('#shortUrlInput').val();
                 if (!shortUrlInput) {
                     $('#messageArea').text("Error: Please fill in the Short URL field.").show();
@@ -165,6 +180,7 @@
         }
 
         function updateCurlInstructions() {
+            // Used to dynamically display curls instructions
             var selectedOption = $('#apiEndpoint').val();
             var baseUrl = appBaseUrl;
             var curlCommand = "curl -X ";
@@ -198,6 +214,7 @@
         }
 
         function updateCurlInstructionsForAuthenticate() {
+            // display instructions for authentication
             var curlCommand = "curl -X POST " +
                 appBaseUrl + "/authenticate \\\n" +
                 "-H 'Content-Type: application/json' \\\n" +
@@ -207,6 +224,7 @@
 
 
         function updateApiDescription() {
+            // Dynamically show discription of each API request that can be made
             var selectedOption = $('#apiEndpoint').val();
             var descriptionText = '';
 

@@ -80,17 +80,21 @@
 </div>
 
 <script>
+    // add an event listener  to the form -> urlShorteningForm' this is triggered when the form is submitted
     document.getElementById('urlShorteningForm').addEventListener('submit', function(event) {
+        // prevent submission of default form
         event.preventDefault();
+        // retrieve values added by the user
         let originalUrl = document.getElementById('longUrl').value;
         let backHalf = document.getElementById('backHalf').value;
         let messageContainer = document.getElementById('messageContainer');
         let validPattern = /^[A-Za-z0-9-_]+$/;
 
-        // First, validate the original URL
+        // The original URL is URI-encoded to ensure its safety
         fetch('/validate-original-url?url=' + encodeURIComponent(originalUrl))
             .then(response => response.json())
             .then(data => {
+                // check the validity of url from server side
                 if (!data.isValid) {
                     throw new Error('Original URL is not valid');
                 }
@@ -98,6 +102,7 @@
                 if (!validPattern.test(backHalf)) {
                     throw new Error('Back-half is not valid');
                 }
+                // create a form data object fetch to the form's action URL with POST method.
                 let formData = new FormData(event.target);
                 return fetch(event.target.action, {
                     method: 'POST',
@@ -105,12 +110,16 @@
                 });
             })
             .then(response => {
+                // check if server response is ok.
                 if (!response.ok) {
                     return response.json().then(errData => Promise.reject(errData));
                 }
+                // parse and return the response
                 return response.json();
             })
             .then(data => {
+                // Once the form is successfully submitted and a response is received,
+                // update the UI with the generated short URL and QR code.
                 document.getElementById('shortUrl').value = data.shortLink;
                 document.getElementById('shortUrlDisplay').style.display = 'block';
                 document.getElementById('downloadQRButton').setAttribute('href', 'data:image/png;base64,' + data.qrCode);
@@ -120,6 +129,7 @@
                 messageContainer.style.display = 'none';
             })
             .catch(error => {
+                // display error
                 if (error.message === 'Original URL is not valid' && !validPattern.test(backHalf)) {
                     messageContainer.textContent = 'Error: Both Original URL and Back-half are not valid.';
                 } else if (error.message === 'Original URL is not valid') {
@@ -135,6 +145,7 @@
 
 
     function copyToClipboard() {
+        // Copy the generated url to clipboard
         let shortUrl = document.getElementById('shortUrl');
         navigator.clipboard.writeText(shortUrl.value)
             .then(() => alert('Short URL copied to clipboard!'))
@@ -142,6 +153,7 @@
     }
 
     function downloadQRCode() {
+        // To download image of QR
         let qrCodeData = document.getElementById('downloadQRButton').getAttribute('href');
         let element = document.createElement('a');
         element.setAttribute('href', qrCodeData);
@@ -152,9 +164,9 @@
     }
 
     document.getElementById('validateBacklinkBtn').addEventListener('click', function() {
+        // used to validate back half
         let backHalf = document.getElementById('backHalf').value;
         let messageContainer = document.getElementById('messageContainer');
-
         let validPattern = /^[A-Za-z0-9-_]+$/;
         if (!validPattern.test(backHalf)) {
             messageContainer.textContent = 'The back-half can only contain alphanumeric characters, hyphens, and underscores.';
@@ -162,7 +174,7 @@
             messageContainer.style.display = 'block';
             return; // Stop the function here if validation fails
         }
-
+        // now send the back half for validation
         let validateUrl = '/validate-backhalf?backHalf=' + encodeURIComponent(backHalf); // Correctly encoded URL
 
         fetch(validateUrl)
@@ -186,15 +198,14 @@
 
 
     document.getElementById('generateBacklinkBtn').addEventListener('click', function() {
+        // used to generate random back half
         let messageContainer = document.getElementById('messageContainer');
 
         let generateUrl = '/generate-backhalf';
-
         fetch(generateUrl, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 if(data.backHalf) {
-                    // Populate the backHalf input field with the generated back-half
                     document.getElementById('backHalf').value = data.backHalf;
                     messageContainer.textContent = 'Back-half generated successfully.';
                     messageContainer.className = 'alert alert-success';
@@ -212,15 +223,15 @@
     });
 
     document.getElementById('validateOriginalUrlBtn').addEventListener('click', function() {
+        // validate original url with Google webrisk API on server end
         let originalUrl = document.getElementById('longUrl').value;
         let messageContainer = document.getElementById('messageContainer');
 
-        // Check if the original URL field is empty
         if (!originalUrl.trim()) {
             messageContainer.textContent = 'Please enter a URL first.';
             messageContainer.className = 'alert alert-warning';
             messageContainer.style.display = 'block';
-            return; // Stop the function execution here
+            return;
         }
 
         fetch('/validate-original-url?url=' + encodeURIComponent(originalUrl))
@@ -242,10 +253,6 @@
             });
     });
 
-
-
-
 </script>
-
 </body>
 </html>

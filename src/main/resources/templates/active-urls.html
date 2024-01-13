@@ -47,7 +47,6 @@
       <p>Creation Date: <span th:text="${#temporals.format(url.creationDate, 'dd MMM yyyy, h:mm a')} + ' (IST)'">Creation Date</span></p>
       <p>Expiry Time: <span th:text="${#temporals.format(url.expirationDate, 'dd MMM yyyy, h:mm a')} + ' (IST)'">Expiry Time</span></p>
       <div class="button-group">
-        <!-- Corrected onclick attribute expression -->
         <a th:href="${url.shortLink}" class="btn btn-secondary btn-space" target="_blank">Go to URL</a>
         <a th:href="'data:image/png;base64,' + ${url.qrCode}" download="qr-code.png" class="btn btn-secondary btn-space">Download QR</a>
         <form th:action="@{/deactivate-url}" method="post" class="btn-space">

@@ -22,6 +22,9 @@ public interface ShortURLRepository extends MongoRepository<ShortURL, String> {
 
     // Method to find all active ShortURLs with expiration dates within a specified range
     List<ShortURL> findByActiveTrueAndExpirationDateBetween(Date start, Date end);
+
+    // Method to check if a provided URL is already a short URL in the database
+    boolean existsByShortLink(String shortLink);
 }
 
 

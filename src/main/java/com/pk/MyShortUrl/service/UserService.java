@@ -16,10 +16,11 @@ public class UserService {
     private final ShortURLRepository shortURLRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // CHECK IF USERNAME IS TAKEN
     public boolean checkUserExists(String username) {
         return userRepository.existsByUsername(username);
     }
-
+    // Register user
     public User registerUser(String username, String email, String password) {
         if (!checkUserExists(username)) {
             User newUser = new User();
@@ -33,17 +34,7 @@ public class UserService {
         return null;
     }
 
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public boolean loginUser(String username, String password) {
-        User user = getUserByUsername(username);
-        return user != null && passwordEncoder.matches(password, user.getPassword());
-    }
-
-
-
+    // Get active url cont for a user
     public int getActiveURLCount(String username) {
         User user = userRepository.findByUsername(username);
         if (user != null) {
@@ -52,6 +43,7 @@ public class UserService {
         return 0;
     }
 
+    // get url limit for a user
     public int getUrlLimit(String username) {
         User user = userRepository.findByUsername(username);
         if (user != null) {
@@ -60,11 +52,12 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
     }
-
+    // check email address is available
     public boolean checkEmailExists(String email) {
         return userRepository.existsByEmail(email);
     }
 
+    // increment count of active urls
     @Transactional
     public void incrementActiveURLCount(String username) {
         User user = userRepository.findByUsername(username);
@@ -73,7 +66,7 @@ public class UserService {
             userRepository.save(user);
         }
     }
-
+    // decrement count of active urls
     @Transactional
     public void decrementActiveURLCount(String username) {
         User user = userRepository.findByUsername(username);
@@ -83,13 +76,4 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public void updateURLCounts(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user != null) {
-            int activeUrls = shortURLRepository.countByUserIdAndActive(user.getId(), true);
-            user.setActiveUrlCount(activeUrls);
-            userRepository.save(user);
-        }
-    }
 }

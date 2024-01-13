@@ -10,6 +10,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * used Google webrisk API, this class has a method searchUri, which checks
+ * if the long url user providing is not in any of list maintained by google for
+ * 1.MALWARE 2.SOCIAL_ENGINEERING 3.UNWANTED_SOFTWARE
+ *
+ */
 @Service
 public class webriskSearchUri {
     public static boolean searchUri(String uri) {
