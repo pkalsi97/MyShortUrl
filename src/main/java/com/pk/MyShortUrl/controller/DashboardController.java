@@ -4,7 +4,6 @@ import com.pk.MyShortUrl.config.AppConfig;
 import com.pk.MyShortUrl.model.ShortURL;
 import com.pk.MyShortUrl.service.ShortURLService;
 import com.pk.MyShortUrl.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +24,7 @@ public class DashboardController {
     private final UserService userService;
     private final AppConfig appConfig;
 
+    // get value of base url
     @Value("${app.baseUrl}")
     private String appBaseUrl;
 
@@ -35,7 +35,11 @@ public class DashboardController {
         this.appConfig = appConfig;
     }
 
-
+    /**
+     * Takes user to the dashboard
+     * @param principal -> Current Authenticated user
+     * @return -> mode and view object
+     */
     @GetMapping("/dashboard")
     public ModelAndView showDashboard(Principal principal) {
         if (principal == null) {
@@ -45,11 +49,14 @@ public class DashboardController {
         String username = principal.getName();
         modelAndView.addObject("username", username);
         modelAndView.addObject("baseUrl", appConfig.getBaseUrl());
-        modelAndView.addObject("totalAssignedUrl", userService.getUrlLimit(username));
-        modelAndView.addObject("totalActiveUrl", userService.getActiveURLCount(username));
         return modelAndView;
     }
 
+    /**
+     * takes user to api docs page
+     * @param principal _. authenticated user
+     * @return -> model and view
+     */
     @GetMapping("/api-docs")
     public ModelAndView apiDocumentation(Principal principal) {
         if (principal == null) {
@@ -59,7 +66,7 @@ public class DashboardController {
         modelAndView.addObject("baseUrl", appBaseUrl);
         return modelAndView;
     }
-
+    // using here to get the value of baseurl (which can be dynamically changed.
     @GetMapping("/api/config")
     @ResponseBody
     public Map<String, String> getConfig() {
@@ -68,6 +75,11 @@ public class DashboardController {
         return config;
     }
 
+    /**
+     * Shows all the active urls to the user on dashboard.
+     * @param principal -> The current authenticated user
+     * @return Model and view object
+     */
     @GetMapping("/active-urls")
     public ModelAndView viewActiveUrls(Principal principal) {
         if (principal == null) {
@@ -81,6 +93,10 @@ public class DashboardController {
         return modelAndView;
     }
 
+    /**
+     * This Get method is used to show all the inactive urls on the inactive URLs page
+     * @param principal -> provided by spring security i.e current Authenticated user.
+     */
     @GetMapping("/inactive-urls")
     public ModelAndView viewInactiveUrls(Principal principal) {
         if (principal == null) {
@@ -88,11 +104,17 @@ public class DashboardController {
         }
         String username = principal.getName();
         List<ShortURL> inactiveUrls = shortURLService.getInactiveShortURLsByUser(username);
+        // The Model has the data to be displayed on the view and view is the template.
         ModelAndView modelAndView = new ModelAndView("inactive-urls");
         modelAndView.addObject("inactiveUrls", inactiveUrls);
         return modelAndView;
     }
 
+    /**
+     * this is used to deactivate short URLs
+     * @param urlId -> URLs ID
+     * @param principal -> Provided by spring security
+     */
     @PostMapping("/deactivate-url")
     public String deactivateUrl(@RequestParam String urlId, Principal principal) {
         String username = principal.getName();
@@ -103,9 +125,4 @@ public class DashboardController {
         return "redirect:/active-urls";
     }
 
-    private void clearResponseCache(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
-    }
 }

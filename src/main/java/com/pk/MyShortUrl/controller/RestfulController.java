@@ -10,7 +10,6 @@ import com.pk.MyShortUrl.service.webriskSearchUri;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
@@ -29,7 +28,7 @@ public class RestfulController {
         this.shortURLService = shortURLService;
         this.webRiskSearchUri = webRiskSearchUri;
     }
-
+    // Get request to display all active urls for user
     @GetMapping("/active")
     public ResponseEntity<List<ShortURLDto>> getActiveURLsForUser(Principal principal) {
 
@@ -43,6 +42,7 @@ public class RestfulController {
         return ResponseEntity.ok(activeUrlsDto);
     }
 
+    // Get request to display all inactive urls for user
     @GetMapping("/inactive")
     public ResponseEntity<List<ShortURLDto>> getInactiveURLsForUser(Principal principal) {
         String userId = principal.getName();
@@ -55,7 +55,7 @@ public class RestfulController {
 
         return ResponseEntity.ok(inactiveUrlsDto);
     }
-
+    // Post request to generate a random url
     @PostMapping("/generateRandom")
     public ResponseEntity<ShortURLDto> generateRandomShortUrl(@RequestBody ShortUrlRequest request, Principal principal) {
         String originalUrl = request.getOriginalUrl();
@@ -69,7 +69,7 @@ public class RestfulController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
+    // Post request to generate a custom Short url
     @PostMapping("/generateCustom")
     public ResponseEntity<?> generateCustomShortUrl(@RequestBody CustomUrlRequest request, Principal principal) {
         String userId = principal.getName();
@@ -83,7 +83,7 @@ public class RestfulController {
         }
     }
 
-
+    // Get request to check the safety of an Original URL
     @GetMapping("/checkSafety")
     public ResponseEntity<String> checkUrlSafety(@RequestParam String url) {
         try {
@@ -98,7 +98,7 @@ public class RestfulController {
         }
     }
 
-
+    // Post request  to disable an active url
     @PostMapping("/disableUrl")
     public ResponseEntity<?> disableUrl(@RequestBody DisableUrlRequest request, Principal principal) {
         String userId = principal.getName();
@@ -111,6 +111,8 @@ public class RestfulController {
         }
     }
 
+
+    // used to get data safely for Get Request made by the user
     private ShortURLDto convertToDto(ShortURL shortURL) {
         ShortURLDto dto = new ShortURLDto();
         dto.setOriginalUrl(shortURL.getOriginalUrl());

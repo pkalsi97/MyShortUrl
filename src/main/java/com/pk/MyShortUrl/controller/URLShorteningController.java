@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import java.security.Principal;
 import java.util.Map;
 
@@ -32,6 +31,7 @@ public class URLShorteningController {
         this.webRiskSearchUri = webRiskSearchUri;
     }
 
+    // Handles creation of short urls, return a response entity
     @PostMapping("/create-short-url")
     @ResponseBody
     public ResponseEntity<?> createShortUrl(@RequestParam String longUrl, @RequestParam String backHalf, Principal principal) {
@@ -60,13 +60,14 @@ public class URLShorteningController {
         }
     }
 
+    // redirects in case incorrect access.
     @GetMapping("/create-short-url")
     public String handleIncorrectAccessToCreateShortUrl() {
         return "redirect:/error";
     }
 
 
-    /// new feature ->
+    /// Used to validate the back half
     @GetMapping("/validate-backhalf")
     @ResponseBody
     public ResponseEntity<?> validateBackHalf(@RequestParam String backHalf, Principal principal) {
@@ -78,6 +79,7 @@ public class URLShorteningController {
         return ResponseEntity.ok(Map.of("isValid", isValid, "isAvailable", isAvailable));
     }
 
+    //used to generate random back half
     @GetMapping("/generate-backhalf")
     @ResponseBody
     public ResponseEntity<?> generateBackHalf(Principal principal) {
@@ -88,6 +90,7 @@ public class URLShorteningController {
         return ResponseEntity.ok(Map.of("backHalf", backHalf));
     }
 
+    // check the validity of the original url using google webrisk API
     @GetMapping("/validate-original-url")
     public ResponseEntity<?> validateOriginalUrl(@RequestParam String url, Principal principal) {
         if (principal == null) {
@@ -100,7 +103,4 @@ public class URLShorteningController {
         boolean isSafe = webriskSearchUri.searchUri(url);
         return ResponseEntity.ok(Map.of("isValid", isSafe));
     }
-
-
-
 }
