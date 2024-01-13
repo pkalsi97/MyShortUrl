@@ -1,13 +1,9 @@
 package com.pk.MyShortUrl.dto;
 
+import lombok.Getter;
+
+@Getter
 public class ShortUrlRequest {
     private String originalUrl;
 
-    public String getOriginalUrl() {
-        return originalUrl;
-    }
-
-    public void setOriginalUrl(String originalUrl) {
-        this.originalUrl = originalUrl;
-    }
 }
