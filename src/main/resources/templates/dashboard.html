@@ -136,9 +136,14 @@
                     messageContainer.textContent = 'Error: Original URL is not valid.';
                 } else if (!validPattern.test(backHalf)) {
                     messageContainer.textContent = 'Error: Back-half is not valid.';
+                } else if (error.message === 'Original URL cannot be the same as the short URL') {
+                    messageContainer.textContent = 'Error: The original URL cannot be the same as the short URL.';
+                } else if (error.message === 'The provided URL is already a short URL') {
+                    messageContainer.textContent = 'Error: The provided URL is already a short URL.';
                 } else {
                     messageContainer.textContent = 'Error: ' + (error.error || 'An error occurred. Please try again.');
                 }
+
                 messageContainer.style.display = 'block';
             });
     });

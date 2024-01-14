@@ -132,7 +132,7 @@ public class ShortURLService {
         return backHalf.toString();
     }
 
-    // get list of inactive urls
+    // get a list of inactive urls
     public List<ShortURL> getInactiveShortURLsByUser(String userId) {
         return shortURLRepository.findAllByUserIdAndActive(userId, false);
     }

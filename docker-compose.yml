@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/myapp/credentials.json
+    volumes:
+      - X:/Project/shorturlqr-410812-d064bbd2d0d0.json:/usr/src/myapp/credentials.json
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
