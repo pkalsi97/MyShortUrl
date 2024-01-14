@@ -85,12 +85,6 @@ token.signing.key=[Your JWT Signing Key]
    mvn spring-boot:run
    ```
    Access the application at `http://localhost:8080`.
-
-You're absolutely right. Let's cover a more comprehensive range of RESTful APIs for the ShortUrl project, including additional endpoints for a complete overview.
-
----
-Certainly! Based on the provided `RestfulController` class from your ShortUrl project, I'll expand the API documentation, including the authentication process and the specific endpoints defined in your controller.
-
 ---
 
 ## API Documentation for ShortUrl
